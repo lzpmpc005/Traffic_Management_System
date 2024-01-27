@@ -15,37 +15,6 @@ def validate_string(string):
     if re.search(sc_number, string):
         return JsonResponse({'error': f"{string} contains number or special character"}, status=400)
 
-from django.http import JsonResponse
-
-@csrf_exempt
-def register_vehicle(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-            plate_number = data.get("plate_number")
-            vehicle_type = data.get("vehicle_type")
-            owner_id = data.get("owner_id")
-
-            if not plate_number or plate_number == "":
-                return JsonResponse({'error': "Plate number not specified"}, status=400)
-
-            if not vehicle_type or vehicle_type == "":
-                return JsonResponse({'error': "Vehicle type not specified"}, status=400)
-
-            if not owner_id:
-                return JsonResponse({'error': "Owner ID not specified"}, status=400)
-
-            owner = Owner.objects.filter(id=owner_id).first()
-            if not owner:
-                return JsonResponse({'error': "Owner does not exist"}, status=400)
-
-            vehicle = Vehicle.objects.create(plate_number=plate_number, vehicle_type=vehicle_type, owner=owner)
-            return JsonResponse({'vehicle_id': vehicle.id})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    elif request.method == 'GET':
-
-        return JsonResponse({'message': 'This endpoint only supports POST requests'}, status=405)
 
 @csrf_exempt
 def register_owner(request):
@@ -86,5 +55,32 @@ def register_junction(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-# @csrf_exempt
-# def register_vehicle(request):
+@csrf_exempt
+def register_vehicle(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            plate_number = data.get("plate_number")
+            vehicle_type = data.get("vehicle_type")
+            owner_id = data.get("owner_id")
+
+            if not plate_number or plate_number == "":
+                return JsonResponse({'error': "Plate number not specified"}, status=400)
+
+            if not vehicle_type or vehicle_type == "":
+                return JsonResponse({'error': "Vehicle type not specified"}, status=400)
+
+            if not owner_id:
+                return JsonResponse({'error': "Owner ID not specified"}, status=400)
+
+            owner = Owner.objects.filter(id=owner_id).first()
+            if not owner:
+                return JsonResponse({'error': "Owner does not exist"}, status=400)
+
+            vehicle = Vehicle.objects.create(plate_number=plate_number, vehicle_type=vehicle_type, owner=owner)
+            return JsonResponse({'vehicle_id': vehicle.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    elif request.method == 'GET':
+
+        return JsonResponse({'message': 'This endpoint only supports POST requests'}, status=405)
