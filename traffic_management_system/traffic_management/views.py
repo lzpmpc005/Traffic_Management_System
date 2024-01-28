@@ -42,7 +42,7 @@ def register_owner(request):
             if exist_owner:
                 return JsonResponse({'error': "Owner is already exist!"}, status=400)
 
-            owner = Owner.objects.create(Owner_name=Owner_name, Owner_phone=Owner_phone, Owner_address=Owner_address)
+            owner = Owner.objects.create(Owner_name=Owner_name, Owner_phone=Owner_phone, Owner_email=Owner_email, Owner_address=Owner_address)
             return JsonResponse({'Owner_id': owner.id})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
@@ -75,6 +75,7 @@ def register_vehicle(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode("utf-8"))
+
             number = data.get("number")
             owner_id = data.get("owner_id")
             color = data.get("color")
@@ -112,7 +113,7 @@ def register_vehicle(request):
             if not year or year  == "":
                 return JsonResponse({'error': "year  not specified"}, status=400)
             if not isinstance(year, int):
-                return JsonResponse({'error': "year  should be integer!"}, status=400)
+                return JsonResponse({'error': "year  should be integer!"}, status=400)     
 
             owner = Owner.objects.filter(id=owner_id).first()
             if not owner:
@@ -154,3 +155,4 @@ def recognize_vehicle(request):
         return JsonResponse({'Plate_number': vehicle.Number})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
