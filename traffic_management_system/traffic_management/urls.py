@@ -1,5 +1,6 @@
 from django.urls import path
 
+
 from .views import (register_owner, register_junction,register_vehicle)
 
 urlpatterns = [

@@ -55,6 +55,7 @@ def register_junction(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
+
 @csrf_exempt
 def register_vehicle(request):
     if request.method == 'POST':
