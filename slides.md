@@ -12,13 +12,28 @@ info: |
 drawings:
   persist: false
 transition: slide-left
-title: traffic management system
+title: Traffic Management System
 mdc: true
 ---
 
-# traffic management system
+# Traffic Management System
 
-PYTHON AND DJANGO
+
+
+
+<div class="absolute top-1/1.9 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+  <button title="Open in python" class="text-xl slidev-icon-btn  !border-none !hover:text-white">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg" alt="Python Logo" style="height: 30px; width: 30px;">
+  </button>
+  <button title="Open in django" class="text-xl slidev-icon-btn  !border-none !hover:text-white">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/75/Django_logo.svg" alt="Django Logo" style="height: 30px; width: 70px;">
+  </button>
+  <button title="Open in PostgreSQL" class="text-xl slidev-icon-btn  !border-none !hover:text-white">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="PostgreSQL Logo" style="height: 30px; width: 30px;">
+  </button>
+</div>
+
+
 
 <div class="pt-12">
   <span @click="$slidev.nav.next" class="px-2 py-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
@@ -47,8 +62,6 @@ layout: default
 
 # Table of contents
 
-
-
 <Toc maxDepth="1"></Toc> 
 
 ---
@@ -56,13 +69,39 @@ layout: image-left
 image: https://images.unsplash.com/photo-1517676109075-9a94d44145d1?q=80&w=3648&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
 ---
 
-# Part 1 register vehicle
+# Register Vehicle Highlights
 
-This part design the models about the vehicle![^1]
+Django view function for handling a POST request to register a vehicle. [^1]
 
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
 
+- Checks if required fields exist and if their types are correct.
+</div>
+</v-click>
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+  
+- Ensures that the plate number, color, producer, and type are strings and do not contain numbers or special characters.
 
-<arrow v-click="[3, 4]" x1="400" y1="420" x2="230" y2="330" color="#564" width="3" arrowSize="1" />
+</div>
+</v-click>
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+  
+- Verifies that the year is an integer.
+</div>
+</v-click>
+
 
 [^1]: [Learn More](https://sli.dev/guide/syntax.html#line-highlighting)
 
@@ -82,11 +121,11 @@ transition: slide-up
 level: 2
 ---
 
-## Rigester_vehicle
+## Rigester Vehicle Details
+ 
+Show how to define the details of cars, [See more.](https://sli.dev/guide/navigation.html)
 
-Hover on the bottom-left corner to see the navigation's controls panel, [learn more](https://sli.dev/guide/navigation.html)
 
-### vehicle details
 
 |     |     |
 | --- | --- |
@@ -106,159 +145,120 @@ Hover on the bottom-left corner to see the navigation's controls panel, [learn m
 <p v-after class="absolute bottom-23 left-45 opacity-30 transform -rotate-10">Here!</p>
 
 
----
 
-# Components
 
-<div grid="~ cols-2 gap-4">
-<div>
-
-You can use Vue components directly inside your slides.
-
-We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that you can use directly. And adding your custom components is also super easy.
-
-```html
-<Counter :count="10" />
-```
-
-<!-- ./components/Counter.vue -->
-<Counter :count="10" m="t-4" />
-
-Check out [the guides](https://sli.dev/builtin/components.html) for more.
-
-</div>
-<div>
-
-```html
-<Tweet id="1390115482657726468" />
-```
-
-<Tweet id="1390115482657726468" scale="0.65" />
-
-</div>
-</div>
-
-<!--
-Presenter note with **bold**, *italic*, and ~~striked~~ text.
-
-Also, HTML elements are valid:
-<div class="flex w-full">
-  <span style="flex-grow: 1;">Left content</span>
-  <span>Right content</span>
-</div>
--->
-
----
-class: px-20
----
-
-# Themes
-
-Slidev comes with powerful theming support. Themes can provide styles, layouts, components, or even configurations for tools. Switching between themes by just **one edit** in your frontmatter:
-
-<div grid="~ cols-2 gap-2" m="t-2">
-
-```yaml
----
-theme: default
----
-```
-
-```yaml
----
-theme: seriph
----
-```
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true" alt="">
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-seriph/01.png?raw=true" alt="">
-
-</div>
-
-Read more about [How to use a theme](https://sli.dev/themes/use.html) and
-check out the [Awesome Themes Gallery](https://sli.dev/themes/gallery.html).
 
 ---
 preload: false
 ---
 
-# Animations
+# Code
 
-Animations are powered by [@vueuse/motion](https://motion.vueuse.org/).
-
-```html
+<v-click>
 <div
   v-motion
   :initial="{ x: -80 }"
   :enter="{ x: 0 }">
-  Slidev
+  
+  Check code here directly or check [full project](https://github.com/lzpmpc005/Traffic_Management_System/tree/main).
 </div>
-```
+</v-click>
 
-<div class="w-60 relative mt-6">
-  <div class="relative w-40 h-40">
-    <img
-      v-motion
-      :initial="{ x: 800, y: -100, scale: 1.5, rotate: -50 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-square.png"
-      alt=""
-    />
-    <img
-      v-motion
-      :initial="{ y: 500, x: -100, scale: 2 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-circle.png"
-      alt=""
-    />
-    <img
-      v-motion
-      :initial="{ x: 600, y: 400, scale: 2, rotate: 100 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-triangle.png"
-      alt=""
-    />
-  </div>
-
-  <div
-    class="text-5xl absolute top-14 left-40 text-[#2B90B6] -z-1"
-    v-motion
-    :initial="{ x: -80, opacity: 0}"
-    :enter="{ x: 0, opacity: 1, transition: { delay: 2000, duration: 1000 } }">
-    Slidev
-  </div>
-</div>
-
-<!-- vue script setup scripts can be directly used in markdown, and will only affects current page -->
-<script setup lang="ts">
-const final = {
-  x: 0,
-  y: 0,
-  rotate: 0,
-  scale: 1,
-  transition: {
-    type: 'spring',
-    damping: 10,
-    stiffness: 20,
-    mass: 2
-  }
-}
-</script>
-
+<v-click>
 <div
   v-motion
-  :initial="{ x:35, y: 40, opacity: 0}"
-  :enter="{ y: 0, opacity: 1, transition: { delay: 3500 } }">
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+  
+  
+</div>
+</v-click>
+<div class="grid grid-cols-2 gap-5 pt-4 -mb-6">
+<div style="overflow-y: auto; max-height: 340px;">
 
-[Learn More](https://sli.dev/guide/animations.html#motion)
+```python
+class Vehicle(models.Model):
+    Number = models.CharField(max_length=10)
+    Owner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
+    Color = models.CharField(max_length=10)
+    Producer = models.CharField(max_length=10)
+    Type = models.CharField(max_length=10)
+    Year = models.IntegerField()
+    def __str__(self) -> str:
+        return self.Number
+```
+</div>
+
+<div style="overflow-y: auto; max-height: 340px;">
+
+```python
+@csrf_exempt
+def register_vehicle(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+
+            number = data.get("number")
+            owner_id = data.get("owner_id")
+            color = data.get("color")
+            producer = data.get("producer")
+            type = data.get("type")
+            year = data.get("year")
+
+            if not number or number == "":
+                return JsonResponse({'error': "Plate_number not specified"}, status=400)
+            if not isinstance(number, str):
+                return JsonResponse({'error': "Plate_number should be string!"}, status=400)
+
+            if not owner_id or owner_id == "":
+                return JsonResponse({'error': "Owner_id not specified"}, status=400)
+
+            if not color or color == "":
+                return JsonResponse({'error': "color not specified"}, status=400)
+            if not isinstance(color, str):
+                return JsonResponse({'error': "color should be string!"}, status=400)
+
+            if not producer or producer == "":
+                return JsonResponse({'error': "producer not specified"}, status=400)
+            if not isinstance(producer, str):
+                return JsonResponse({'error': "producer should be string!"}, status=400)
+            if re.search(sc_number, producer):
+                return JsonResponse({'error': "producer contains number or special character"}, status=400)
+
+            if not type or type == "":
+                return JsonResponse({'error': "type not specified"}, status=400)
+            if not isinstance(type, str):
+                return JsonResponse({'error': "type should be string!"}, status=400)
+            if re.search(sc_number, type):
+                return JsonResponse({'error': "type contains number or special character"}, status=400)
+
+            if not year or year  == "":
+                return JsonResponse({'error': "year  not specified"}, status=400)
+            if not isinstance(year, int):
+                return JsonResponse({'error': "year  should be integer!"}, status=400)     
+
+            owner = Owner.objects.filter(id=owner_id).first()
+            if not owner:
+                return JsonResponse({'error': "Owner does not exist"}, status=400)
+
+            vehicle = Vehicle.objects.create(Number=number, Owner=owner, Color=color, Producer=producer, Type=type, Year=year)
+            return JsonResponse({'vehicle_id': vehicle.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+```
+</div>
+
+
+
 
 </div>
 
----
+
+
+
+
+[Learn More]()
+
 
 
 
@@ -295,7 +295,17 @@ rectangle "Register Vehicle" {
 :::figcaption
 Use Case Diagram:
 :::
-This diagram illustrates the interaction between the "User" and the "Register Vehicle" use case. The user submits vehicle information, which triggers the "Register Vehicle" use case.
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+
+  The interaction between the "User" and the "Register Vehicle" use case. The user submits vehicle information, which triggers the "Register Vehicle" use case.
+</div>
+</v-click>
+
+
 
 
 [Learn More](https://sli.dev/guide/syntax.html#diagrams)
@@ -304,10 +314,9 @@ This diagram illustrates the interaction between the "User" and the "Register Ve
 
 
 
-
 ---
 
-# Diagrams
+## Class_Diagrams
 
 See different diagrams for function vehicle_register.
 
@@ -344,9 +353,17 @@ JsonResponse --|> dict
 @enduml
 
 ```
-:::figcaption
-Class Diagram:This diagram depicts the class structure of the Django models involved in the vehicle registration process: "Vehicle", "Owner", and "JsonResponse". "Vehicle" has attributes such as Number, Owner_id, Color, Producer, Type, and Year. "Owner" has attributes related to owner information. "JsonResponse" represents the response format used in the Django views.
-:::
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+
+  Details like number, owner ID, color, producer, type, and year, "Owner" with owner information, and "JsonResponse" for response formatting in views.
+</div>
+</v-click>
+
+
 
 
 [Learn More](https://sli.dev/guide/syntax.html#diagrams)
@@ -357,7 +374,7 @@ Class Diagram:This diagram depicts the class structure of the Django models invo
 
 ---
 
-# Diagrams
+## Sequence_Diagrams
 
 See different diagrams for function vehicle_register.
 
@@ -396,10 +413,18 @@ end
 deactivate View
 @enduml
 ```
-:::figcaption
-Sequence Diagram:
-This diagram illustrates the sequence of interactions between the "User", "Django View", "Owner", "Vehicle", and "JsonResponse" during the vehicle registration process. The user submits vehicle information, which is processed by the Django view. If validation passes, the view queries the owner, creates a vehicle instance, and returns a success response. If validation fails, it returns an error response.
-:::
+<v-click>
+<div
+  v-motion
+  :initial="{ x: -80 }"
+  :enter="{ x: 0 }">
+
+  The "User" interacts with the "Django View", "Owner", "Vehicle", and "JsonResponse" during vehicle registration. The user submits vehicle info, which the view processes. If it's valid, the view creates a vehicle and sends a success response; if not, it sends an error response.
+</div>
+</v-click>
+
+
+
 
 [Learn More](https://sli.dev/guide/syntax.html#diagrams)
 
@@ -408,16 +433,27 @@ This diagram illustrates the sequence of interactions between the "User", "Djang
 
 
 
+
+
 ---
-src: ./pages/multiple-entries.md
-hide: false
+class: px-20
 ---
+
+# Demo
+
+Here you can check the  **project demo** in our slides:
+<iframe src="http://localhost:8000/admin" width="100%" height="300"></iframe>
+
+
+Read more about [Traffic Management Systems]() and
+check out the [github project](https://github.com/lzpmpc005/Traffic_Management_System/tree/main).
+
 
 ---
 layout: center
 class: text-center
 ---
 
-# Learn More
+# Thank you for watching
 
-[Documentations](https://sli.dev) · [GitHub](https://github.com/slidevjs/slidev) · [Showcases](https://sli.dev/showcases.html)
+[Documentations](https://sli.dev) · [GitHub](https://github.com/lzpmpc005/Traffic_Management_System/tree/main) 
