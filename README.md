@@ -1,6 +1,4 @@
-<h1>
-  <br /><br /><strong>Traffic Management System</strong>
-</h1>
+# Traffic Management System
 
 Automated traffic management system implemented with Django and PostgreSQL
 ---

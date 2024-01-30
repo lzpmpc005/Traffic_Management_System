@@ -123,9 +123,7 @@ We use "color + producer + type" to recognize vehicles.
 
 
 ---
-layout: image-left
-image: https://images.unsplash.com/photo-1517676109075-9a94d44145d1?q=80&w=3648&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
----
+
 
 # Register Vehicle Highlights
 
@@ -420,9 +418,10 @@ UC1 --> UC2
 
 # Recognize_Vehicle: Sequence Diagram
 
-<div class="grid grid-cols-1 gap-5 pt-4 -mb-6">
 
-```plantuml {scale: 1}
+<div class="grid grid-cols-1 gap-1 pt-0 -mb-6">
+
+```plantuml {scale: 0.8}
 @startuml
 
 actor User
