@@ -110,7 +110,7 @@ def register_vehicle(request):
             if re.search(sc_number, type):
                 return JsonResponse({'error': "type contains number or special character"}, status=400)
 
-            if not year or year  == "":
+            if not year or year == "":
                 return JsonResponse({'error': "year  not specified"}, status=400)
             if not isinstance(year, int):
                 return JsonResponse({'error': "year  should be integer!"}, status=400)     
@@ -118,6 +118,10 @@ def register_vehicle(request):
             owner = Owner.objects.filter(id=owner_id).first()
             if not owner:
                 return JsonResponse({'error': "Owner does not exist"}, status=400)
+
+            exist_vehicle = Vehicle.objects.filter(Number=number).first()
+            if exist_vehicle:
+                return JsonResponse({'error': "Vehicle is already registered!"}, status=400)
 
             vehicle = Vehicle.objects.create(Number=number, Owner=owner, Color=color, Producer=producer, Type=type, Year=year)
             return JsonResponse({'vehicle_id': vehicle.id})
