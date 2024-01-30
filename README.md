@@ -1,16 +1,18 @@
-# Traffic_Management_System
-Automated traffic management system implemented with Django and PostgreSQL
-
 <h1>
   <br /><br /><strong>Traffic Management System</strong>
 </h1>
 
-[![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)]()
-[![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)]()
-[![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)]()
-[![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)]()
-[![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)]()
-[![Wiki Pages](https://img.shields.io/badge/AREG%20Wiki%20Pages-8-brightgreen?style=social&logo=wikipedia)]()
+Automated traffic management system implemented with Django and PostgreSQL
+---
+
+## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+- [Project Status](#project-status)
+- [Introduction](#introduction)
+- [Installation and Run](#installation-and-run)
+  - [Installing PostgreSQL on Windows:](#installing-postgresql-on-windows)
+  - [Installing PostgreSQL on macOS:](#installing-postgresql-on-macos)
+  - [Installing PostgreSQL on Linux:](#installing-postgresql-on-linux)
+- [Contribution](#Contribution)
 
 ---
 
@@ -22,7 +24,6 @@ Automated traffic management system implemented with Django and PostgreSQL
   <tr>
     <td><img src="" alt=""/></td>
     <td><img src="https://img.shields.io/badge/OS-linux%20%7C%20windows-blue??style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
-    <td colspan="2"><img src="https://img.shields.io/badge/CPU-x86%20%7C%20x86__64%20%7C%20arm%20%7C%20aarch64-blue?style=flat&logo=amd&logoColor=b0c0c0&labelColor=363D44" alt="CPU Architect"/></td>
   </tr>
 </table>
 
@@ -30,17 +31,17 @@ Automated traffic management system implemented with Django and PostgreSQL
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**Bookstore** 
-This project is part of a Django-based book management system. It provides the following features:
-- Add books and authors
-- View inventory and filter books
-- Update and delete books
-- Bulk delete books
+**Traffic_Management_System**   
+This project is a simulating traffic management system, developed with Django and use PostgreSQL as a local database server. It has been implemented with the following features:
+- Register Owners
+- Register Vehicles
+- Register Junctions
+- Recognize Vehicle Plate Number
 
 
 ## Installation and Run
 
-1. Create a virtual environment and install dependencies:
+### I. Create a virtual environment and install dependencies:
 ```bash
 pip install django # For Linux/macOS/Windows
 ```
@@ -107,8 +108,7 @@ pip install django # For Linux/macOS/Windows
 Once installed, you can use the respective client tools to connect to the PostgreSQL database and start managing databases and development work.
 
 
-
-2. Clone the project to your local machine:
+### II. Clone the project to your local machine:
 
 ```bash
 git clone https://github.com/lzpmpc005/Traffic_Management_System.git
@@ -123,23 +123,11 @@ python manage.py migrate
 ```
 python manage.py runserver
 ```
-5. Visit http://localhost:8000/ to view the project.
+5. Visit http://localhost:8000/traffic_management to view the project.
 
-> 💡 xxx [xxx](). 
-
----
-
-## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Project Status](#project-status)
-- [Introduction](#introduction)
-- [Installation and Run](#installation-and-run)
-  - [Installing PostgreSQL on Windows:](#installing-postgresql-on-windows)
-  - [Installing PostgreSQL on macOS:](#installing-postgresql-on-macos)
-  - [Installing PostgreSQL on Linux:](#installing-postgresql-on-linux)
-- [Table of contents](#table-of-contents)
-- [API Endpoints](#api-endpoints)
-- [Models](#models)
-- [Thank you all!](#thank-you-all)
+> 💡 xxx [xxx](To be continue). 
 
 ---
-
+ ## Contribution
+ 
+If you want to contribute or comment on this project, email lihongtaoix7@gmail.com.
