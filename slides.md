@@ -12,13 +12,11 @@ info: |
 drawings:
   persist: false
 transition: slide-left
-title: Traffic Management System
+title: traffic management system
 mdc: true
 ---
 
-# Traffic Management System
-
-
+# Traffic Management System 1.0   
 
 
 <div class="absolute top-1/1.9 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -33,13 +31,12 @@ mdc: true
   </button>
 </div>
 
-
-
 <div class="pt-12">
   <span @click="$slidev.nav.next" class="px-2 py-1 rounded cursor-pointer" hover="bg-white bg-opacity-10">
     HONGTAO AND VINCENT <carbon:arrow-right class="inline"/>
   </span>
 </div>
+29/01/2024
 
 <div class="abs-br m-6 flex gap-2">
   <button @click="$slidev.nav.openInEditor()" title="Open in Editor" class="text-xl slidev-icon-btn opacity-50 !border-none !hover:text-white">
@@ -62,16 +59,75 @@ layout: default
 
 # Table of contents
 
+
+
 <Toc maxDepth="1"></Toc> 
+---
+
+# Requirements
+
+|     |     |
+| --- | --- |
+| <kbd>I</kbd> |  Register Vehicle |
+| <kbd>II</kbd> | Simulate Recognizing License |
 
 ---
-layout: image-left
-image: https://images.unsplash.com/photo-1517676109075-9a94d44145d1?q=80&w=3648&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
+
+# Class Diagram
+
+<div class="grid grid-cols-1 gap-5 pt-4 -mb-6">
+
+```plantuml {scale: 1}
+@startuml
+left to right direction
+
+class Owner {
+  - Id : Integer
+  - Name: String
+  - Phone: String
+  - Email: String
+  - Address: String
+  + register() : void
+}
+
+class Vehicle {
+  - Number: String
+  - Owner_id: Owner_id
+  - Color: String
+  - Producer: String
+  - Type: String
+  - Year: Integer
+  + register(Owner: owner_id) : void
+}
+
+class Junction {
+  - Address: String
+  + registerJunction() : void
+  + recognizeLicense(Vehicle : Color, Producer, Type) : string
+}
+
+Owner -- Vehicle
+Junction -- Vehicle
+
+@enduml
+
+```
+:::figcaption
+We defined three classes: Junction, Vehicle, Owner.   
+We use phone number to distinguish each owner.   
+We use owner_id to connect each vehicle to its owner.   
+We use "color + producer + type" to recognize vehicles.
+:::
+
+</div>
+
+
 ---
+
 
 # Register Vehicle Highlights
 
-Django view function for handling a POST request to register a vehicle. [^1]
+Django view function for handling a POST request to register a vehicle. 
 
 <v-click>
 <div
@@ -103,8 +159,6 @@ Django view function for handling a POST request to register a vehicle. [^1]
 </v-click>
 
 
-[^1]: [Learn More](https://sli.dev/guide/syntax.html#line-highlighting)
-
 <style>
 .footnotes-sep {
   @apply mt-20 opacity-10;
@@ -123,8 +177,7 @@ level: 2
 
 ## Rigester Vehicle Details
  
-Show how to define the details of cars, [See more.](https://sli.dev/guide/navigation.html)
-
+Show how to define the details of cars, [See more.](https://github.com/lzpmpc005/Traffic_Management_System/blob/main/traffic_management_system/traffic_management/views.py)
 
 
 |     |     |
@@ -135,18 +188,6 @@ Show how to define the details of cars, [See more.](https://sli.dev/guide/naviga
 | <kbd>producer</kbd> | models.CharField(max_length=10) |
 | <kbd>type</kbd> | models.CharField(max_length=10) |
 | <kbd>year</kbd> | models.IntegerField |
-<!-- https://sli.dev/guide/animations.html#click-animations -->
-<img
-  v-click
-  class="absolute -bottom-9 -left-7 w-80 opacity-50"
-  src="https://sli.dev/assets/arrow-bottom-left.svg"
-  alt=""
-/>
-<p v-after class="absolute bottom-23 left-45 opacity-30 transform -rotate-10">Here!</p>
-
-
-
-
 
 ---
 preload: false
@@ -253,20 +294,9 @@ def register_vehicle(request):
 
 </div>
 
-
-
-
-
-[Learn More]()
-
-
-
-
 ---
 
-# Diagrams
-
-See different diagrams for function vehicle_register.
+# Register_Vehicle: Usecase Diagram
 
 <div class="grid grid-cols-1 gap-5 pt-4 -mb-6">
 
@@ -305,82 +335,14 @@ Use Case Diagram:
 </div>
 </v-click>
 
-
-
-
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
 </div>
-
-
 
 
 ---
 
-## Class_Diagrams
-
-See different diagrams for function vehicle_register.
+# Register_Vehicle: Sequence Diagram
 
 <div class="grid grid-cols-2 gap-5 pt-4 -mb-6">
-
-```plantuml {scale: 1}
-@startuml
-class Vehicle {
-    - Number: string
-    - Owner_id: string
-    - Color: string
-    - Producer: string
-    - Type: string
-    - Year: int
-}
-
-class Owner {
-    - Owner_name: string
-    - Owner_phone: string
-    - Owner_email: string
-    - Owner_address: string
-}
-
-class JsonResponse {
-    + JsonResponse(data: dict, status: int): void
-}
-
-class JsonResponse {
-    + JsonResponse(data: dict, status: int): void
-}
-
-Vehicle --|> Owner
-JsonResponse --|> dict
-@enduml
-
-```
-<v-click>
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }">
-
-  Details like number, owner ID, color, producer, type, and year, "Owner" with owner information, and "JsonResponse" for response formatting in views.
-</div>
-</v-click>
-
-
-
-
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
-</div>
-
-
-
-
----
-
-## Sequence_Diagrams
-
-See different diagrams for function vehicle_register.
-
-<div class="grid grid-cols-2 gap-5 pt-4 -mb-6">
-
-
 
 ```plantuml {scale: 1}
 @startuml
@@ -423,31 +385,74 @@ deactivate View
 </div>
 </v-click>
 
+</div>
 
+---
 
+# Part II Recognize Vehicle Plate Number
 
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
+## Usecase Diagram
 
+<div class="grid grid-cols-1 gap-5 pt-4 -mb-6">
+
+```plantuml {scale: 1}
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor User as User
+rectangle "Recognize License" {
+  usecase "Provide Vehicle identifiers: Color, Producer, Type" as UC1
+  usecase "Return Plate Number" as UC2
+}
+
+User --> UC1
+UC1 --> UC2
+@enduml
+
+```
 
 </div>
 
-
-
-
-
----
-class: px-20
 ---
 
-# Demo
-
-Here you can check the  **project demo** in our slides:
-<iframe src="http://localhost:8000/admin" width="100%" height="300"></iframe>
+# Recognize_Vehicle: Sequence Diagram
 
 
-Read more about [Traffic Management Systems]() and
-check out the [github project](https://github.com/lzpmpc005/Traffic_Management_System/tree/main).
+<div class="grid grid-cols-1 gap-1 pt-0 -mb-6">
 
+```plantuml {scale: 0.8}
+@startuml
+
+actor User
+participant Controller
+participant Vehicle
+database Database
+
+User -> Controller: GET Request
+activate Controller
+
+Controller -> Controller: Validate Request Parameters
+alt Valid Parameters
+  Controller -> Database: Query Database
+  activate Database
+  Database --> Vehicle: Query
+  deactivate Database
+  alt Vehicle Found
+    Controller --> User: JsonResponse{'Plate_number': vehicle.Number}
+  else Vehicle Not Found
+    Controller --> User: JsonResponse{'error': "Vehicle not found"}, status=404
+  end
+else Invalid Parameters
+  Controller --> User: JsonResponse{'error': "Validation error"}, status=400
+end
+
+deactivate Controller
+@enduml
+
+```
+
+</div>
 
 ---
 layout: center
@@ -456,4 +461,4 @@ class: text-center
 
 # Thank you for watching
 
-[Documentations](https://sli.dev) · [GitHub](https://github.com/lzpmpc005/Traffic_Management_System/tree/main) 
+[GitHub](https://github.com/lzpmpc005/Traffic_Management_System/tree/main) 
