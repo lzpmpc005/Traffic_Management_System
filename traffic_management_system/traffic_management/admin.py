@@ -5,7 +5,7 @@ admin.site.register(Owner)
 admin.site.register(Junction)
 
 class VehicleAdmin(admin.ModelAdmin):
-    list_display = ('Number', 'Owner', 'Color', 'Producer', 'Type', 'Year')
+    list_display = ( 'Owner', 'Color', 'Producer', 'Type', 'Year')
     list_filter = ('Color', 'Producer', 'Type', 'Year')
 
 admin.site.register(Vehicle, VehicleAdmin)
