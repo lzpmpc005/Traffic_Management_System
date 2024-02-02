@@ -1,51 +1,64 @@
-from .models import Vehicle, Junction, Owner
+from reportlab.pdfgen import canvas
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
 import json
 import re
+import random
+from .models import Vehicle, Junction, Owner, Plates, Log, Fine
 
 
 sc_number = r'[^\w\s]|\d'
-@csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode("utf-8"))
+
             Owner_name = data.get("name")
+            Owner_age = data.get("age")
             Owner_phone = data.get("phone")
             Owner_email = data.get("email")
             Owner_address = data.get("address")
-# Imperative programming
-            if not Owner_name or Owner_name == "":
-                return JsonResponse({'error': "Owner_name not specified"}, status=400)
-            if not isinstance(Owner_name, str):
-                return JsonResponse({'error': "Owner_name should be string!"}, status=400)
-            if re.search(sc_number, Owner_name):
-                return JsonResponse({'error': "Owner_name contains number or special character"}, status=400)
+            Owner_driver_license = data.get("driver_license")
 
-            if not Owner_phone or Owner_phone == "":
-                return JsonResponse({'error': "Owner_phone not specified"}, status=400)
-            if not isinstance(Owner_name, str):
-                return JsonResponse({'error': "Owner_phone should be string!"}, status=400)
+            if not Owner_name or not isinstance(Owner_name, str) or re.search(r'\d|[^A-Za-z\s]', Owner_name):
+                return JsonResponse({'error': "Invalid or missing Owner_name"}, status=400)
 
-            if not Owner_email or Owner_email == "":
-                return JsonResponse({'error': "Owner_email not specified"}, status=400)
-            if not isinstance(Owner_email, str):
-                return JsonResponse({'error': "Owner_email should be string!"}, status=400)
+            if not Owner_age or not isinstance(Owner_age, int) or not (16 <= Owner_age <= 80):
+                return JsonResponse({'error': "Owner should be between 16 and 80 to be qualified"}, status=400)
 
-            if not Owner_address or Owner_address == "":
-                return JsonResponse({'error': "Owner_address not specified"}, status=400)
-            if not isinstance(Owner_address, str):
-                return JsonResponse({'error': "Owner_address should be string!"}, status=400)
+            if not Owner_phone or not isinstance(Owner_phone, str):
+                return JsonResponse({'error': "Invalid or missing Owner_phone"}, status=400)
+
+            if not Owner_email or not isinstance(Owner_email, str):
+                return JsonResponse({'error': "Invalid or missing Owner_email"}, status=400)
+
+            if not Owner_address or not isinstance(Owner_address, str):
+                return JsonResponse({'error': "Invalid or missing Owner_address"}, status=400)
+
+            if not Owner_driver_license or not isinstance(Owner_driver_license, str):
+                return JsonResponse({'error': "Invalid or missing Owner_driver_license"}, status=400)
 
             exist_owner = Owner.objects.filter(Owner_phone=Owner_phone).first()
             if exist_owner:
-                return JsonResponse({'error': "Owner is already exist!"}, status=400)
+                return JsonResponse({'error': "Owner with the same phone number already exists"}, status=400)
 
-            owner = Owner.objects.create(Owner_name=Owner_name, Owner_phone=Owner_phone, Owner_email=Owner_email, Owner_address=Owner_address)
+            owner = Owner.objects.create(
+                Owner_name=Owner_name,
+                Owner_age=Owner_age,
+                Owner_phone=Owner_phone,
+                Owner_email=Owner_email,
+                Owner_address=Owner_address,
+                Owner_driver_license=Owner_driver_license
+            )
+
             return JsonResponse({'Owner_id': owner.id})
+        except json.JSONDecodeError as e:
+            return JsonResponse({'error': f"Invalid JSON format: {e}"}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': "This endpoint only supports POST requests"}, status=405)
 
 
 @csrf_exempt
@@ -53,21 +66,28 @@ def register_junction(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode("utf-8"))
-            Address = data.get("address")
+            address = data.get("address")
 
-            if not Address or Address == "":
+            if not address or address == "":
                 return JsonResponse({'error': "Address not specified"}, status=400)
-            if not isinstance(Address, str):
-                return JsonResponse({'error': "Address should be string!"}, status=400)
 
-            exist_junction = Junction.objects.filter(Address=Address).first()
-            if exist_junction:
-                return JsonResponse({'error': "Junction is already registered!"}, status=400)
+            if not isinstance(address, str):
+                return JsonResponse({'error': "Address should be a string!"}, status=400)
 
-            junction = Junction.objects.create(Address=Address)
-            return JsonResponse({'junction_id': junction.id})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            try:
+                junction, created = Junction.objects.get_or_create(Address=address)
+                if not created:
+                    return JsonResponse({'error': "Junction is already registered!"}, status=400)
+
+                return JsonResponse({'status': "Junction registered successfully", 'junction_id': junction.id})
+
+            except IntegrityError as e:
+                return JsonResponse({'error': str(e)}, status=400)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': "Invalid JSON format"}, status=400)
+
+    return JsonResponse({'error': "Invalid request method"}, status=405)
 
 
 @csrf_exempt
@@ -75,84 +95,150 @@ def register_vehicle(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode("utf-8"))
-
-            number = data.get("number")
             owner_id = data.get("owner_id")
             color = data.get("color")
-            producer = data.get("producer")
-            type = data.get("type")
-            year = data.get("year")
-#Imperative programming
-            if not number or number == "":
-                return JsonResponse({'error': "Plate_number not specified"}, status=400)
-            if not isinstance(number, str):
-                return JsonResponse({'error': "Plate_number should be string!"}, status=400)
+            vtype = data.get("type")
 
-            if not owner_id or owner_id == "":
-                return JsonResponse({'error': "Owner_id not specified"}, status=400)
-
-            if not color or color == "":
-                return JsonResponse({'error': "color not specified"}, status=400)
-            if not isinstance(color, str):
-                return JsonResponse({'error': "color should be string!"}, status=400)
-
-            if not producer or producer == "":
-                return JsonResponse({'error': "producer not specified"}, status=400)
-            if not isinstance(producer, str):
-                return JsonResponse({'error': "producer should be string!"}, status=400)
-            if re.search(sc_number, producer):
-                return JsonResponse({'error': "producer contains number or special character"}, status=400)
-
-            if not type or type == "":
-                return JsonResponse({'error': "type not specified"}, status=400)
-            if not isinstance(type, str):
-                return JsonResponse({'error': "type should be string!"}, status=400)
-            if re.search(sc_number, type):
-                return JsonResponse({'error': "type contains number or special character"}, status=400)
-
-            if not year or year  == "":
-                return JsonResponse({'error': "year  not specified"}, status=400)
-            if not isinstance(year, int):
-                return JsonResponse({'error': "year  should be integer!"}, status=400)     
+            if not owner_id or not isinstance(owner_id, int):
+                return JsonResponse({'error': "Invalid or missing owner_id"}, status=400)
 
             owner = Owner.objects.filter(id=owner_id).first()
             if not owner:
-                return JsonResponse({'error': "Owner does not exist"}, status=400)
+                return JsonResponse({'error': "Owner hasn't registered yet"}, status=400)
 
-            vehicle = Vehicle.objects.create(Number=number, Owner=owner, Color=color, Producer=producer, Type=type, Year=year)
+            if not color or not isinstance(color, str):
+                return JsonResponse({'error': "Invalid or missing color"}, status=400)
+
+            if not vtype or not isinstance(vtype, str):
+                return JsonResponse({'error': "Missing type"}, status=400)
+
+            # Check vehicle condition
+            condition_score = random.randint(48, 99)
+            if condition_score < 50:
+                return JsonResponse({'error': "Vehicle condition unqualified"}, status=400)
+
+            # Assign an available plate number
+            available_plate = Plates.objects.filter(Status='available').first()
+            if not available_plate:
+                return JsonResponse({'error': "No available plates"}, status=400)
+
+            # Update plate status to 'assigned'
+            available_plate.Status = 'assigned'
+            available_plate.save()
+
+            vehicle = Vehicle.objects.create(
+                Owner=owner, Color=color, VType=vtype, Speed=0,
+                Condition=condition_score, PlateNumber=available_plate
+            )
+
             return JsonResponse({'vehicle_id': vehicle.id})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+def logging(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            address = data.get('Junction')
+            plateNumber = data.get('PlateNumber')
+            speed = data.get('Speed')
+            light = data.get('Light')
+
+            plate = Plates.objects.get(Number=plateNumber)
+            vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
+            log = Log.objects.create(Junction=address, Vehicle_PlateNumber=plateNumber, Vehicle_Speed=speed)
+
+            violation = []
+            if not plate:
+                violation.append('Fake Plate Number')
+            if light == 1:
+                if speed == 0:
+                    violation.append('Illegal Parking')
+            if light == 0 and speed != 0:
+                violation.append('Running Red Light')
+            if speed > 60:
+                speeding_percentage = (speed-60)*2
+                if speeding_percentage < 20:
+                    violation.append('Speeding')
+                elif speeding_percentage < 40:
+                    violation.append('Speeding20%')
+                elif speeding_percentage < 60:
+                    violation.append('Speeding40%')
+                elif speeding_percentage < 80:
+                    violation.append('Speeding60%')
+                elif speeding_percentage < 100:
+                    violation.append('Speeding80%')
+                else:
+                    violation.append('Speeding100%')
+
+            if violation:
+                issueFine(violation, plateNumber, address, log.Date, log.Time.strftime('%H:%M:%S'))
+            else:
+                violation = None
+
+            logging_details = (f"{log.Date} {log.Time.strftime('%H:%M:%S')}, {address}, {plateNumber}, {vehicle.Color} "
+                               f"{vehicle.VType}, {speed}km/h, Violation: {violation}")
+
+            return JsonResponse({'Logging': logging_details})
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
 
 @csrf_exempt
-def recognize_vehicle(request):
-    try:
-        color = request.GET.get('color')
-        producer = request.GET.get('producer')
-        type = request.GET.get('type')
+def issueFine(violation, plateNumber, address, date, time):
+    print(violation)
+    plate = Plates.objects.get(Number=plateNumber)
+    vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
+    owner = Owner.objects.filter(id=vehicle.Owner_id).first()
+    email = owner.Owner_email
+    fine = 0
+    if 'Illegal Parking' in violation:
+        fine += 30
+    if 'Running Red Light' in violation:
+        fine += 100
+    if 'Fake Plate Number' in violation:
+        fine += 1000
+    if 'Speeding' in violation:
+        fine += 15
+    if 'Speeding20%' in violation:
+        fine += 30
+    if 'Speeding40%' in violation:
+        fine += 60
+    if 'Speeding60%' in violation:
+        fine += 120
+    if 'Speeding80%' in violation:
+        fine += 240
+    if 'Speeding100%' in violation:
+        fine += 500
 
-        if not color or color == "":
-            return JsonResponse({'error': "color not specified"}, status=400)
-        if not isinstance(color, str):
-            return JsonResponse({'error': "color should be string!"}, status=400)
+    pdf = canvas.Canvas(f"E:\\LU_Leipzig\\ProgramClinic\\Project3\\Fine_for_{owner.Owner_name}.pdf")
+    pdf.setFont("Helvetica-Bold", 18)
+    textobject = pdf.beginText(210, 800)
+    textobject.textLines("The City of Leipzig\n\nNotice of Violation\n\n")
+    pdf.drawText(textobject)
 
-        if not producer or producer == "":
-            return JsonResponse({'error': "producer not specified"}, status=400)
-        if not isinstance(producer, str):
-            return JsonResponse({'error': "producer should be string!"}, status=400)
-        if re.search(sc_number, producer):
-            return JsonResponse({'error': "producer contains number or special character"}, status=400)
+    pdf.setFont("Helvetica", 12)
+    textobject = pdf.beginText(50, 700)
+    textobject.textLines(f"Mr./Ms. {owner.Owner_name}:\n\nYour Vehicle {plateNumber}  {violation}\n\n"
+                         f"at {address} in {date} at {time}\n\n"
+                         f"You need to pay the total fine ${fine} in one week!\n\n"
+                         f"Fine for delaying payment is 10% every week!\n\n"
+                         f"You have the right to appeal within one month of this notice.")
+    pdf.drawText(textobject)
 
-        if not type or type == "":
-            return JsonResponse({'error': "type not specified"}, status=400)
-        if not isinstance(type, str):
-            return JsonResponse({'error': "type should be string!"}, status=400)
-        if re.search(sc_number, type):
-            return JsonResponse({'error': "type contains number or special character"}, status=400)
+    pdf.setFont("Times-Roman", 10)
+    textobject = pdf.beginText(400, 550)
+    textobject.textLines(f"IBAN: DE03790412379328765326\nBIC: COBADEFFXXX\n"
+                         f"Bank: Commerzbank AG\nHolder: Hongtao Li")
+    pdf.drawText(textobject)
 
-        vehicle = Vehicle.objects.filter(Color=color, Producer=producer, Type=type).first()
-        return JsonResponse({'Plate_number': vehicle.Number})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+    pdf.save()
+
+    Fine.objects.create(fine=fine, owner=owner, status='notified')
 
