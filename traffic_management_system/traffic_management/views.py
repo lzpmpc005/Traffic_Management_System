@@ -5,10 +5,11 @@ from django.db import IntegrityError
 import json
 import re
 import random
-from .models import Vehicle, Junction, Owner, Plates, Log, Fine
-
+from django.core.mail import EmailMessage
+from .models import Vehicle, Junction, Owner, Plates, Log, Fine, DriverLicense
 
 sc_number = r'[^\w\s]|\d'
+@csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
         try:
@@ -153,7 +154,11 @@ def logging(request):
             vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
             log = Log.objects.create(Junction=address, Vehicle_PlateNumber=plateNumber, Vehicle_Speed=speed)
 
+            driver_license = DriverLicense.objects.get(Owner_id=vehicle.Owner_id)
+
             violation = []
+            if driver_license.Status == 'Suspended':
+                violation.append('Illegal Driving')
             if not plate:
                 violation.append('Fake Plate Number')
             if light == 1:
@@ -192,31 +197,41 @@ def logging(request):
 
 @csrf_exempt
 def issueFine(violation, plateNumber, address, date, time):
-    print(violation)
     plate = Plates.objects.get(Number=plateNumber)
     vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
-    owner = Owner.objects.filter(id=vehicle.Owner_id).first()
-    email = owner.Owner_email
+    owner = Owner.objects.get(id=vehicle.Owner_id)
+    driver_license = DriverLicense.objects.get(Owner_id=owner.id)
+
+# calculate fine
     fine = 0
     if 'Illegal Parking' in violation:
-        fine += 30
+        fine += 50
     if 'Running Red Light' in violation:
         fine += 100
     if 'Fake Plate Number' in violation:
         fine += 1000
+    if 'Illegal Driving' in violation:
+        fine += 2000
     if 'Speeding' in violation:
-        fine += 15
+        fine += 50
     if 'Speeding20%' in violation:
-        fine += 30
+        fine += 100
     if 'Speeding40%' in violation:
-        fine += 60
+        fine += 200
     if 'Speeding60%' in violation:
-        fine += 120
+        fine += 300
     if 'Speeding80%' in violation:
-        fine += 240
+        fine += 400
     if 'Speeding100%' in violation:
         fine += 500
 
+# License Score Update
+    currentScore = driver_license.Score-fine/100
+    DriverLicense.objects.filter(Owner_id=owner.id).update(Score=currentScore)
+    if currentScore <= 0:
+        DriverLicense.objects.filter(Owner_id=owner.id).update(Status='Suspended')
+
+# Generate notice
     pdf = canvas.Canvas(f"E:\\LU_Leipzig\\ProgramClinic\\Project3\\Fine_for_{owner.Owner_name}.pdf")
     pdf.setFont("Helvetica-Bold", 18)
     textobject = pdf.beginText(210, 800)
@@ -225,20 +240,76 @@ def issueFine(violation, plateNumber, address, date, time):
 
     pdf.setFont("Helvetica", 12)
     textobject = pdf.beginText(50, 700)
-    textobject.textLines(f"Mr./Ms. {owner.Owner_name}:\n\nYour Vehicle {plateNumber}  {violation}\n\n"
-                         f"at {address} in {date} at {time}\n\n"
-                         f"You need to pay the total fine ${fine} in one week!\n\n"
-                         f"Fine for delaying payment is 10% every week!\n\n"
-                         f"You have the right to appeal within one month of this notice.")
+    if currentScore <= 0:
+        messagebody = (f"Mr./Ms. {owner.Owner_name}:\n\nYour Vehicle {plateNumber}  {violation}\n\n"
+                       f"at {address} in {date} at {time}\n\n"
+                       f"Your Driver License has been SUSPENDED.\n\n"
+                       f"You need to pay the total fine ${fine} in one week!\n\n"
+                       f"Fine for delaying payment is 10% every week!\n\n"
+                       f"You have the right to appeal within one month of this notice.")
+    else:
+        messagebody = (f"Mr./Ms. {owner.Owner_name}:\n\nYour Vehicle {plateNumber}  {violation}\n\n"
+                       f"at {address} in {date} at {time}\n\n"
+                       f"Your Driver License has {currentScore} left.\n\n"
+                       f"You need to pay the total fine ${fine} in one week!\n\n"
+                       f"Fine for delaying payment is 10% every week!\n\n"
+                       f"You have the right to appeal within one month of this notice.")
+
+    textobject.textLines(messagebody)
     pdf.drawText(textobject)
 
     pdf.setFont("Times-Roman", 10)
-    textobject = pdf.beginText(400, 550)
+    textobject = pdf.beginText(400, 500)
     textobject.textLines(f"IBAN: DE03790412379328765326\nBIC: COBADEFFXXX\n"
                          f"Bank: Commerzbank AG\nHolder: Hongtao Li")
     pdf.drawText(textobject)
-
     pdf.save()
 
-    Fine.objects.create(fine=fine, owner=owner, status='notified')
+    existing_fine = Fine.objects.filter(owner_id=owner.id).first()
+    if existing_fine:
+        current_fine = existing_fine.fine + fine
+        Fine.objects.filter(owner_id=owner.id).update(fine=current_fine, status='notified')
+    else:
+        Fine.objects.create(fine=fine, owner=owner, status='notified')
+
+# Email notice
+    subject = 'Violation Notice LEIPZIG TRAFFIC POLICE'
+    message = messagebody
+    from_email = 'leipzig_traffic@outlook.com'
+    recipient_list = [owner.Owner_email]
+
+    email = EmailMessage(subject, message, from_email, recipient_list)
+    email.attach_file(f'E:\\LU_Leipzig\\ProgramClinic\\Project3\\Fine_for_{owner.Owner_name}.pdf')
+    email.send()
+
+
+@csrf_exempt
+def payFine(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            driver_license = data.get('Driver_license')
+            fine = data.get('Fine')
+
+            if not isinstance(fine, int):
+                return JsonResponse({'Error': 'The smallest unit is $1'})
+
+            owner = Owner.objects.get(Owner_driver_license=driver_license)
+            currentfine = Fine.objects.filter(owner_id=owner.id).first()
+            balance = currentfine.fine - fine
+            if balance > 0:
+                Fine.objects.filter(owner_id=owner.id).update(fine=balance)
+                Fine.objects.filter(owner_id=owner.id).update(status="partPaid")
+                return JsonResponse({'Balance': balance, 'Status': 'partPaid'})
+            elif balance <= 0:
+                Fine.objects.filter(owner_id=owner.id).update(fine=balance)
+                Fine.objects.filter(owner_id=owner.id).update(status="fullyPaid")
+                return JsonResponse({'Balance': balance, 'Status': 'fullyPaid'})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+
+
 

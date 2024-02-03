@@ -4,6 +4,7 @@ from traffic_management.models import Owner
 
 fake = Faker()
 
+
 def create_random_owners(num_owners=100):
     print("Creating owners...")
     for _ in range(num_owners):

@@ -39,9 +39,9 @@ if __name__ == "__main__":
     light = 1
 
     for _ in range(10):
-        vehicle_id = random.randint(4, 119)
+        vehicle_id = random.randint(120, 129)
 
         light = 1 - light
 
         traffic_flow(vehicle_id, light)
-        time.sleep(20)
+        time.sleep(5)

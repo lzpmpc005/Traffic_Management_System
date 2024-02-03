@@ -17,6 +17,7 @@ class Plates(models.Model):
     def __str__(self):
         return self.Number
 
+
 class Vehicle(models.Model):
     Owner = models.ForeignKey(Owner, null=True, on_delete=models.SET_NULL)
     Color = models.CharField(max_length=20)
@@ -43,3 +44,13 @@ class Fine(models.Model):
     fine = models.IntegerField()
     owner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=10)
+    date = models.DateField(auto_now_add=True)
+
+
+class DriverLicense(models.Model):
+    Owner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
+    License_Number = models.CharField(max_length=10)
+    Issue_Date = models.DateField(auto_now_add=True)
+    Expire_Date = models.CharField(default="LifeLong")
+    Status = models.CharField(max_length=10, default='Valid')
+    Score = models.IntegerField(default=12)

@@ -27,5 +27,4 @@ def register_vehicle(owner_id):
         print(f"Error registering vehicle: {response.json().get('error')}")
 
 if __name__ == "__main__":
-    for owner_id in range(297, 300):
-        register_vehicle(owner_id)
+    register_vehicle(486)

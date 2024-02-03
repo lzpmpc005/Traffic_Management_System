@@ -33,8 +33,9 @@ Automated traffic management system implemented with Django and PostgreSQL
 This project is a simulating traffic management system, developed with Django and use PostgreSQL as a local database server. It has been implemented with the following features:
 - Register Owners
 - Register Vehicles
-- Register Junctions
-- Recognize Vehicle Plate Number
+- Recognize Vehicles and Logging Information
+- Detect Violation
+- Issue Fine and send Notice by email
 
 
 ## Installation and Run
@@ -121,9 +122,11 @@ python manage.py migrate
 ```
 python manage.py runserver
 ```
-5. Visit http://localhost:8000/traffic_management to view the project.
+5. Run 'TrafficFlow.py' and 'Violators.py' in PythonScripts to simulate logging, violation detection and Issue Fine.
 
-> 💡 xxx [xxx](To be continue). 
+6. Run 'UpdateFine.py' to simulate increasing fine for delaying payment.
+
+> 💡 xxx [xxx] (To be continue). 
 
 ---
  ## Contribution
