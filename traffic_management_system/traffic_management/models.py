@@ -24,7 +24,7 @@ class Vehicle(models.Model):
     VType = models.CharField(max_length=50)
     Speed = models.IntegerField(default=0)
     Condition = models.IntegerField(default=100)
-    PlateNumber = models.ForeignKey(Plates, null=True, on_delete=models.SET_NULL)
+    PlateNumber = models.OneToOneField(Plates, null=True, on_delete=models.SET_NULL)
 
 
 class Junction(models.Model):
@@ -48,7 +48,7 @@ class Fine(models.Model):
 
 
 class DriverLicense(models.Model):
-    Owner = models.ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
+    Owner = models.OneToOneField(Owner, on_delete=models.SET_NULL, null=True)
     License_Number = models.CharField(max_length=10)
     Issue_Date = models.DateField(auto_now_add=True)
     Expire_Date = models.CharField(default="LifeLong")
