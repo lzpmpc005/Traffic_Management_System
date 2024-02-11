@@ -7,6 +7,7 @@ import re
 import random
 from django.core.mail import EmailMessage
 from .models import Vehicle, Junction, Owner, Plates, Log, Fine, DriverLicense
+import os
 
 sc_number = r'[^\w\s]|\d'
 @csrf_exempt
@@ -310,6 +311,18 @@ def payFine(request):
             return JsonResponse({'error': str(e)}, status=400)
 
 
+def send_congestion_notification_email(junction_name, drivers_emails):
 
+    message = f"Dear driver, please avoid {junction_name} as it is congested."
 
+    subject = 'Congested Area Notification'
+    from_email = 'leipzig_traffic@outlook.com'
 
+    email = EmailMessage(subject, message, from_email, drivers_emails)
+    email.send()
+
+    print("Congestion notification email sent successfully.")
+
+junction_name = "Sample Junction"
+drivers_emails = ["drivrs1, drivrs2", "drivrs3"]
+send_congestion_notification_email(junction_name, drivers_emails)
