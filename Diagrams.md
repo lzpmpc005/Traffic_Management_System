@@ -4,67 +4,82 @@ or import into draw.io
 ## Class Diagram
 @startuml
 
+Left to Right Direction
+
 class Owner {
-  + Owner_name: CharField(max_length=20)
-  + Owner_age: IntegerField()
-  + Owner_phone: CharField(max_length=15)
-  + Owner_email: CharField(max_length=30, default='<EMAIL>')
-  + Owner_address: CharField(max_length=100)
-  + Owner_driver_license: CharField(max_length=10, default='0000000000', blank=False, unique=True)
+  + Owner_id
+  + Owner_name
+  + Owner_age
+  + Owner_phone
+  + Owner_email
+  + Owner_address
+  + Owner_driver_license
 }
 
 class Plates {
-  + Number: CharField(max_length=10, unique=True)
-  + Status: CharField(max_length=10, default='available')
+  + Plates_id
+  + PlateNumber
+  + Status
 }
 
 class Vehicle {
-  + Owner: ForeignKey(Owner, null=True, on_delete=models.SET_NULL)
-  + Color: CharField(max_length=20)
-  + VType: CharField(max_length=50)
-  + Speed: IntegerField(default=0)
-  + Condition: IntegerField(default=100)
-  + PlateNumber: ForeignKey(Plates, null=True, on_delete=models.SET_NULL)
+  + Vehicle_id
+  + Owner_id
+  + Color
+  + VType
+  + Speed
+  + Condition
+  + PlateNumber
 }
 
 class Junction {
-  + Address: CharField(max_length=100)
-  + Light: IntegerField(default=1)
+  + Junction_id
+  + Junction_Address
+  + Junction_Type
+  + Light
 }
 
 class Log {
-  + Junction: CharField(max_length=100)
-  + Vehicle_PlateNumber: CharField(max_length=10)
-  + Vehicle_Speed: IntegerField()
-  + Date: DateField(auto_now_add=True)
-  + Time: TimeField(auto_now_add=True)
+  + Junction_id
+  + PlateNumber
+  + Vehicle_Speed
+  + Date
+  + Time
 }
 
 class Fine {
-  + fine: IntegerField()
-  + owner: ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
-  + status: CharField(max_length=10)
-  + date: DateField(auto_now_add=True)
+  + fine_id
+  + fine
+  + owner_id
+  + status
+  + date
 }
 
 class DriverLicense {
-  + Owner: ForeignKey(Owner, on_delete=models.SET_NULL, null=True)
-  + License_Number: CharField(max_length=10)
-  + Issue_Date: DateField(auto_now_add=True)
-  + Expire_Date: CharField(default="LifeLong")
-  + Status: CharField(max_length=10, default='Valid')
-  + Score: IntegerField(default=12)
+  + Owner_id
+  + License_Number
+  + Issue_Date
+  + Expire_Date
+  + Status
+  + Score
 }
 
-Owner --{ Vehicle
-Plates --{ Vehicle
-Owner --{ Fine
-Owner --{ DriverLicense
-Owner --{ Log
+class AnalysisReport {
+  + Junction_id
+  + Vehicle_Quantity
+  + Date
+  + Time
+}
+
+Log - Junction
+Log -- AnalysisReport
+Owner "1" -- "N" Vehicle
+Plates "1" -- "1" Vehicle
+Owner "1" -- "N" Fine
+Owner "1" -- "1" DriverLicense
+Vehicle -- Log
 
 @enduml
-
-
 
 ## Register_Vehicle: Usecase Diagram
 
@@ -181,5 +196,115 @@ Ou --> O: Send Notice Email
 O --> User: Pay Fine
 User --> User: Update Fine
 User --> User: Self Update
+
+@enduml
+
+
+## Analyse Traffic Flow Usecase Diagram
+@startuml
+
+left to right direction
+
+actor "SkyEye" << device >> as S
+actor "Police" << human >> as P
+
+rectangle "Traffic Management System" {
+ 
+  usecase (Log Traffic Flow) as UC1
+  usecase (Retrieve Traffic Report) as UC3
+  usecase (Generate Traffic Report) as UC4
+  usecase (Predict Congestion) as UC5
+
+  rectangle "DMV"{
+    usecase (Triger Updating\nAnalysis Report Table) as UC2
+    usecase (Store Log Information) as UC7
+    usecase (Retrieve Analysis Data) as UC8
+  }
+  
+
+S --> UC1
+UC1 --> UC7
+UC7 -> UC2: << include >>
+
+P --> UC3
+UC3 --> UC4: << include >>
+UC4 --> UC8
+
+UC1 --> UC5: << include >>
+UC5 --> UC8
+
+@enduml
+  
+## Analyse Traffic Flow Sequence Diagram
+
+@startuml
+
+== Traffic Analysis ==
+
+actor "SkyEye" as S
+actor "Police" as P
+
+participant "Traffic Analysis System" as TAS
+
+participant "Department of Motor Vehicle" as DMV
+
+S -> DMV : Log Traffic information
+activate DMV
+DMV -> DMV : Auto Updating Traffic Data
+P -> TAS : Retrieve Traffic Report
+deactivate DMV
+activate TAS
+TAS -> DMV : Get Traffic Data
+DMV -> TAS : Return Traffic Data
+TAS -> TAS : Generate Traffic Report
+TAS -> TAS : Open Report
+
+@enduml
+
+## Detect Congestion and Notify UseCase Diagram
+@startuml
+
+actor SkyEye as S
+actor EmailServer as E
+rectangle "Traffic Management System" {
+   usecase (Log Traffic Information) as UC1
+   usecase (Retrieve Traffic Data) as UC2
+   usecase (Check Congestion) as UC4
+   usecase (Send Notification Email) as UC5
+}
+
+S -> UC1
+UC1 --> UC2
+UC2 -> UC4
+UC4 -> UC5: <include>
+E -> UC5
+
+@enduml
+
+## Detect Congestion and Notify Sequence Diagram
+
+@startuml
+
+== Traffic Logging ==
+
+actor "SkyEye" as S
+participant "Department of Motor Vehicle" as DMV
+participant "Email Server" as ES
+actor "Driver" as D
+
+S -> DMV : Log Traffic information
+activate DMV
+DMV -> DMV : Auto Updating Traffic Data
+S -> DMV : Get Traffic Data
+DMV -> S : Return Traffic Data
+deactivate DMV
+S -> S : Check Congestion
+
+== Email Notification ==
+
+S -> ES : Send Congestion Information
+activate ES
+ES -> D : Email Notification
+deactivate ES
 
 @enduml
