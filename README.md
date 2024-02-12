@@ -4,7 +4,7 @@ Automated traffic management system implemented with Django and PostgreSQL
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Project Status](#project-status)
+- [Requirements](#project-status)
 - [Introduction](#introduction)
 - [Installation and Run](#installation-and-run)
   - [Installing PostgreSQL on Windows:](#installing-postgresql-on-windows)
@@ -15,15 +15,13 @@ Automated traffic management system implemented with Django and PostgreSQL
 ---
 
 <!-- markdownlint-disable -->
-## Project Status[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#project-status)
-<table class="no-border">
- 
-  </tr>
-  <tr>
-    <td><img src="" alt=""/></td>
-    <td><img src="https://img.shields.io/badge/OS-linux%20%7C%20windows-blue??style=flat&logo=Linux&logoColor=b0c0c0&labelColor=363D44" alt="Operating systems"/></td>
-  </tr>
-</table>
+## Requirements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#requirements)
+1. For Mac OS
+
+
+2. For Windows
+- setuptools==69.0.3
+- wheel==0.42.0
 
 ---
 
@@ -35,12 +33,15 @@ This project is a simulating traffic management system, developed with Django an
 - Register Vehicles
 - Recognize Vehicles and Logging Information
 - Detect Violation
-- Issue Fine and send Notice by email
+- Issue Fine and send Notice by Email
+- Analyse Traffice Flow
+- Generate and Retrieve Traffic Report
+- Detect and Predict Congestion and Notify Drivers by Email
 
 
 ## Installation and Run
 
-### I. Create a virtual environment and install dependencies:
+### I. Install Django and PostgreSQL:
 ```bash
 pip install django # For Linux/macOS/Windows
 ```
@@ -107,24 +108,90 @@ pip install django # For Linux/macOS/Windows
 Once installed, you can use the respective client tools to connect to the PostgreSQL database and start managing databases and development work.
 
 
-### II. Clone the project to your local machine:
+### II. Clone the repository and Run:
 
 ```bash
 git clone https://github.com/lzpmpc005/Traffic_Management_System.git
+```
+
+1. Navigate to the repository
+```bash
 cd Traffic_Management_System
+```
+2. Install dependencies using pip:
+```bash
+pip install -r requirements.txt
+```
+3. Navigate to the Project
+```bash
 cd traffic_management_system
 ```
-3. Perform database migration:
+4. Configure `traffic_management_system/settings.py` according to you database and email server:
+- Database Server
+```python
+DATABASES = {
+   'default': {
+      'ENGINE': 'django.db.backends.postgresql_psycopg2',
+      'NAME': 'your_postgresql_database',
+      'USER': 'your_postgresql_username',
+      'PASSWORD': 'your_postgresql_password',
+      'HOST': 'localhost', # modify if yours is different
+      'PORT': '5432', # modify if yours is different
+   }
+}
 ```
+
+- Email Server
+```python
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp-mail.outlook.com'    
+# Modify according to your email server
+EMAIL_PORT = 587     
+# Modify according to your email server
+EMAIL_USE_TLS = True 
+EMAIL_HOST_USER = 'your email address' 
+EMAIL_HOST_PASSWORD = 'your email password' 
+```
+
+5. Perform database migration:
+```
+python manage.py makemigrations
 python manage.py migrate
 ```
-4. Run the development server:
+6. Run the local server:
 ```
 python manage.py runserver
 ```
-5. Run 'TrafficFlow.py' and 'Violators.py' in PythonScripts to simulate logging, violation detection and Issue Fine.
 
-6. Run 'UpdateFine.py' to simulate increasing fine for delaying payment.
+7. Excute 'TrafficFlow.py' and 'Violators.py' in PythonScripts to simulate logging, violation detection and Issue Fine.
+
+> [!NOTE]
+> If you want to recieve email as an owner, you need to use 'CreateOwner.py', 'IssueDriverLicense.py', 'RegisterVehicles.py' sequentially and remember to change the values inside accordingly.   
+
+> Then change the vehicle id as you just registered in 'Violators.py' and Excute   
+
+> If you encounter excuting outside Django project error, try excute in shell:   
+```
+python manage.py shell
+exec(open('PythonScripts/CreateOwner.py').read())
+```
+
+8. Excute 'UpdateFine.py' to simulate increasing fine for delaying payment.
+
+9. Retrieve Traffic Reports
+- For current Period (default as 10 minutes) and all Junction:
+   http://localhost:8000/traffic_management/report
+- For current Period (default as 10 minutes) and specific Junction:
+   http://localhost:8000/traffic_management/report?Junction_id=7
+- For a certain Period and all Junction:
+   http://localhost:8000/traffic_management/report?Date=2024-02-11&Time_From=00:00:00&Time_To=23:59:59
+- For a certain Period and specific Junction:
+   http://localhost:8000/traffic_management/report?Date=2024-02-11&Time_From=00:00:00&Time_To=23:59:59&Junction_id=7
+
+> [!NOTE]
+> Keep 'TrafficFlow.py' running if you want to see data for the first two scenarios.   
+
+> The report will be opened automaticly, and the default saving path is 'E:\\LU_Leipzig\\ProgramClinic\\Project3\\traffic_report.pdf', please change accordingly inside views.py
 
 > 💡 xxx [xxx] (To be continue). 
 
