@@ -12,7 +12,9 @@ import os
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from datetime import datetime
-from .models import Junction, Owner, Street
+
+from django.core.mail import EmailMessage
+from .models import Log, Street, Owner, Vehicle, Junction
 sc_number = r'[^\w\s]|\d'
 @csrf_exempt
 def register_owner(request):
@@ -452,27 +454,25 @@ def register_route(request):
 
 def send_ema_notification(junction_address):
     try:
-        
-        avoidance_routes = {}
+
         junction = Junction.objects.get(Address=junction_address)
-        emergency_vehicles = Log.objects.filter(Junction=junction, Time__gte=datetime.now()-timedelta(minutes=1), Time__lte=datetime.now()).filter(Vehicle_PlateNumber__contains='S')
+   
         for log in emergency_vehicles:
-            vehicle = Vehicle.objects.get(PlateNumber__Number=log.Vehicle_PlateNumber)
-            route = Street.objects.filter(Start_junction=junction)
+            route = Street.objects.filter(Start_junction=junction, End_junction__Address=log.next_junction_address)
             if route.exists():
-                avoidance_routes[log.Vehicle_PlateNumber] = route.first().End_junction.Address
-
-        for plate_number, end_junction_address in avoidance_routes.items():
-            owner = Owner.objects.get(vehicle__PlateNumber__Number=plate_number)
+                upcoming_junctions.append(route.first().End_junction.Address)
         
-            message = f"Dear Mr./Ms. {owner.Owner_name},\n\nEmergency vehicles are nearby. Please be cautious and avoid.\n\nSincerely,\nLeipzig Traffic Department"
-            subject = "Emergency Vehicle Notification"
-            from_email = "leipzig_traffic@outlook.com"
-            recipient_list = [owner.Owner_email]
-
-
-            email = EmailMessage(subject, message, from_email, recipient_list)
-            email.send()
+        for upcoming_junction in upcoming_junctions:
+            vehicles_at_junction = Vehicle.objects.filter(PlateNumber__in=Log.objects.filter(Junction__Address=upcoming_junction).values('Vehicle_PlateNumber'))
+            for vehicle in vehicles_at_junction:
+                owner = Owner.objects.get(vehicle=vehicle)
+                message = f"Dear Mr./Ms. {owner.Owner_name},\n\nAn emergency vehicle is approaching the junction near you. Please be cautious and avoid.\n\nSincerely,\nLeipzig Traffic Department"
+                subject = "Emergency Vehicle Notification"
+                from_email = "leipzig_traffic@outlook.com"
+                recipient_list = [owner.Owner_email]
+                
+                email = EmailMessage(subject, message, from_email, recipient_list)
+                email.send()
 
         return "Emergency avoidance notifications sent successfully."
 
