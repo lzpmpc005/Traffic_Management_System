@@ -464,7 +464,15 @@ def send_ema_notification(junction_address):
 
         for plate_number, end_junction_address in avoidance_routes.items():
             owner = Owner.objects.get(vehicle__PlateNumber__Number=plate_number)
-            send_congestion_notification_email(junction_address, owner.id)
+        
+            message = f"Dear Mr./Ms. {owner.Owner_name},\n\nEmergency vehicles are nearby. Please be cautious and avoid.\n\nSincerely,\nLeipzig Traffic Department"
+            subject = "Emergency Vehicle Notification"
+            from_email = "leipzig_traffic@outlook.com"
+            recipient_list = [owner.Owner_email]
+
+
+            email = EmailMessage(subject, message, from_email, recipient_list)
+            email.send()
 
         return "Emergency avoidance notifications sent successfully."
 
