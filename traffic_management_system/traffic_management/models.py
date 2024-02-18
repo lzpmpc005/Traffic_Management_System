@@ -29,11 +29,12 @@ class Vehicle(models.Model):
 
 class Junction(models.Model):
     Address = models.CharField(max_length=100)
+    JType = models.CharField(max_length=20)
     Light = models.IntegerField(default=1)
 
 
 class Log(models.Model):
-    Junction = models.CharField(max_length=100)
+    Junction = models.ForeignKey(Junction, null=True, on_delete=models.SET_NULL)
     Vehicle_PlateNumber = models.CharField(max_length=10)
     Vehicle_Speed = models.IntegerField()
     Date = models.DateField(auto_now_add=True)
@@ -54,3 +55,17 @@ class DriverLicense(models.Model):
     Expire_Date = models.CharField(default="LifeLong")
     Status = models.CharField(max_length=10, default='Valid')
     Score = models.IntegerField(default=12)
+
+
+class StatReport(models.Model):
+    Junction = models.ForeignKey(Junction, on_delete=models.CASCADE, null=False)
+    Vehicle_Quantity = models.IntegerField(default=1)
+    Date = models.DateField(auto_now_add=True)
+    Time = models.TimeField()
+
+
+class Street(models.Model):
+    Start_junction = models.ForeignKey(Junction, on_delete=models.CASCADE, null=False, related_name='start_junction')
+    End_junction = models.ForeignKey(Junction, on_delete=models.CASCADE, null=False, related_name='end_junction')
+    Distance = models.IntegerField()
+    Name = models.CharField(max_length=50)
