@@ -12,7 +12,7 @@ import os
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from datetime import datetime
-
+from .models import Junction, Owner, Street
 sc_number = r'[^\w\s]|\d'
 @csrf_exempt
 def register_owner(request):
@@ -449,3 +449,24 @@ def register_route(request):
             return JsonResponse({'error': "Invalid JSON format"}, status=400)
 
     return JsonResponse({'error': "Invalid request method"}, status=405)
+
+def send_ema_notification(junction_address):
+    try:
+        
+        avoidance_routes = {}
+        junction = Junction.objects.get(Address=junction_address)
+        emergency_vehicles = Log.objects.filter(Junction=junction, Time__gte=datetime.now()-timedelta(minutes=1), Time__lte=datetime.now()).filter(Vehicle_PlateNumber__contains='S')
+        for log in emergency_vehicles:
+            vehicle = Vehicle.objects.get(PlateNumber__Number=log.Vehicle_PlateNumber)
+            route = Street.objects.filter(Start_junction=junction)
+            if route.exists():
+                avoidance_routes[log.Vehicle_PlateNumber] = route.first().End_junction.Address
+
+        for plate_number, end_junction_address in avoidance_routes.items():
+            owner = Owner.objects.get(vehicle__PlateNumber__Number=plate_number)
+            send_congestion_notification_email(junction_address, owner.id)
+
+        return "Emergency avoidance notifications sent successfully."
+
+    except Exception as e:
+        return f"Error: {e}"
