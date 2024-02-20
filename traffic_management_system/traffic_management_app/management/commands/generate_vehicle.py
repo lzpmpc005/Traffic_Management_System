@@ -14,8 +14,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         light = 1
         last_toggle_time = datetime.now().strftime("%M%S")
-        end = 18
+        end = random.randint(1, 30)
         street = Street.objects.filter(Start_junction_id=end).first()
+        vehicle_id = random.randint(120, 129)
 
         while True:
             now = datetime.now().strftime("%M%S")
@@ -33,7 +34,7 @@ class Command(BaseCommand):
 
             end = street.End_junction_id if street.Start_junction_id == end else street.Start_junction_id
 
-            self.drive(light, speed, end)
+            self.drive(light, speed, end, vehicle_id)
 
             street = random.choice(
                 Street.objects.filter(
@@ -41,10 +42,9 @@ class Command(BaseCommand):
                 )
             )
 
-    def drive(self, light, speed, junction_id):
+    def drive(self, light, speed, junction_id, vehicle_id):
         url = "http://localhost:8000/traffic_management/logging"
 
-        vehicle_id = 121
         vehicle = Vehicle.objects.get(id=vehicle_id)
         plate = Plates.objects.get(id=vehicle.PlateNumber_id)
         junction = Junction.objects.get(id=junction_id)
@@ -63,6 +63,6 @@ class Command(BaseCommand):
         response = requests.post(url, data=json.dumps(data), headers=headers)
 
         if response.status_code == 200:
-            self.stdout.write(self.style.SUCCESS(response.json()))
+            self.stdout.write(self.style.SUCCESS(str(response.json())))
         else:
-            self.stdout.write(self.style.ERROR(response.json().get('error')))
+            self.stdout.write(self.style.ERROR(str(response.json().get('error'))))

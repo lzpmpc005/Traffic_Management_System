@@ -16,10 +16,17 @@ Automated traffic management system implemented with Django and PostgreSQL
 
 <!-- markdownlint-disable -->
 ## Requirements[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#requirements)
-1. For Mac OS
+ 
+ To perfectly use all the features, you need to install the following dependencies or follow the instructions in Installation and Run.
 
-
-2. For Windows
+- Django==5.0.2
+- Faker==23.2.1
+- aker-vehicle==0.2.0
+- matplotlib==3.8.3
+- psycopg2-binary==2.9.9
+- python-dateutil==2.8.2
+- reportlab==4.1.0
+- requests==2.31.0
 - setuptools==69.0.3
 - wheel==0.42.0
 
@@ -37,6 +44,9 @@ This project is a simulating traffic management system, developed with Django an
 - Analyse Traffice Flow
 - Generate and Retrieve Traffic Report
 - Detect and Predict Congestion and Notify Drivers by Email
+- Detect Emergency Vehicles that are on mission 
+- Point the fastest way to the Emergency Vehicle and avoid congestions
+- Notify drivers ahead to make way by email
 
 
 ## Installation and Run
@@ -163,22 +173,43 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-7. Excute 'TrafficFlow.py' and 'Violators.py' in PythonScripts to simulate logging, violation detection and Issue Fine.
+7. Import Or Create A Map
+- add new junction
+http://localhost:8000/traffic_management/register_junction
+  - method: POST
+  - body: {"address": "Junction Address"}
+
+- add new street
+http://localhost:8000/traffic_management/register_route
+  - method: POST
+  - body: {
+    "start": start_junction_id,
+    "end": end_junction_id,
+    "distance": int,
+    "name": "street name"
+}
 
 > [!NOTE]
-> If you want to recieve email as an owner, you need to use 'CreateOwner.py', 'IssueDriverLicense.py', 'RegisterVehicles.py' sequentially and remember to change the values inside accordingly.   
+> Now you can use our customized command directly to simulate scenarios or operations.  
 
-> Then change the vehicle id as you just registered in 'Violators.py' and Excute   
-
-> If you encounter excuting outside Django project error, try excute in shell:   
+7. To simulate logging, violation detection and Issue Fine.
 ```
-python manage.py shell
-exec(open('PythonScripts/CreateOwner.py').read())
+python manage.py generate_violators
 ```
+> [!NOTE]
+> If you want to recieve email as an owner, you need to register as an owner, issue a driver License to yourself and then register a vehicle for yourself sequentially and remember to change the values inside "generate_violators.py" accordingly.   
 
-8. Excute 'UpdateFine.py' to simulate increasing fine for delaying payment.
+8. To simulate increasing fine for delaying payment.
+```
+python manage.py update_fines
+```
 
 9. Retrieve Traffic Reports
+- Simulate traffic flow
+```
+python manage.py simulate_traffic_flow
+```
+
 - For current Period (default as 10 minutes) and all Junction:
    http://localhost:8000/traffic_management/report
 - For current Period (default as 10 minutes) and specific Junction:
@@ -192,6 +223,22 @@ exec(open('PythonScripts/CreateOwner.py').read())
 > Keep 'TrafficFlow.py' running if you want to see data for the first two scenarios.   
 
 > The report will be opened automaticly, and the default saving path is 'E:\\LU_Leipzig\\ProgramClinic\\Project3\\traffic_report.pdf', please change accordingly inside views.py
+
+10. To Simulate Emergency Scenarios
+- generate normal vehicles
+```
+python manage.py generate_vehicle
+```
+- simulate congestion
+```
+python manage.py simulate_traffic_flow
+```
+- generate emergency vehicles
+```
+python manage.py generate_emergency_vehicle
+```
+> [!NOTE]
+> You can generate as many vehicles and emergency vehicles as you wish by opening another terminal and execute the command.   
 
 > 💡 xxx [xxx] (To be continue). 
 

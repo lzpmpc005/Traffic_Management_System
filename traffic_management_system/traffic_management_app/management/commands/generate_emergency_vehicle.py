@@ -2,51 +2,47 @@ from django.core.management.base import BaseCommand
 from time import sleep
 import requests
 import json
-from traffic_management_app.models import Vehicle, Plates, Junction, Street
+from traffic_management_app.models import Vehicle, Plates, Junction, Street, StatReport
 import random
-from datetime import datetime
 from django.db.models import Q
 
 
 class Command(BaseCommand):
     help = 'Simulate vehicle driving behavior'
 
-    def handle(self, *args, **kwargs):
-        light = 1
-        last_toggle_time = datetime.now().strftime("%M%S")
-        end = 3
-        street = Street.objects.filter(Start_junction_id=end).first()
+    def add_arguments(self, parser):
+        parser.add_argument('destination', type=int, help='The ID of the destination junction')
 
-        while True:
+    def handle(self, *args, **kwargs):
+        destination_id = kwargs['destination']
+        current_junction_id = 3
+        vehicle_id = random.randint(131, 133)
+        next_junction_id = self.drive(1, 60, current_junction_id, vehicle_id, destination_id)
+
+        while next_junction_id:
+            street = Street.objects.filter(Q(Start_junction_id=current_junction_id, End_junction_id=next_junction_id) | Q(Start_junction_id=next_junction_id, End_junction_id=current_junction_id)).first()
             speed = 60
             time_cost = 12 * street.Distance / speed
+            print(f"Driving to Junction {next_junction_id}")
             sleep(time_cost)
+            current_junction_id = next_junction_id
+            next_junction_id = self.drive(1, 60, current_junction_id, vehicle_id, destination_id)
 
-            end = street.End_junction_id if street.Start_junction_id == end else street.Start_junction_id
+        print(f"Arrived at destination: Junction {destination_id}")
 
-            self.drive(light, speed, end)
 
-            next_streets = Street.objects.filter(
-                Q(Start_junction_id=end) | Q(End_junction_id=end))
-            if next_streets.count() == 1:
-                street = next_streets.first()
-            else:
-                next_streets = next_streets.exclude(id=street.id)
-                street = random.choice(next_streets)
-
-    def drive(self, light, speed, junction_id):
+    def drive(self, light, speed, junction_id, vehicle_id, destination_id):
         url = "http://localhost:8000/traffic_management/logging"
 
-        vehicle_id = 131
         vehicle = Vehicle.objects.get(id=vehicle_id)
         plate = Plates.objects.get(id=vehicle.PlateNumber_id)
         junction = Junction.objects.get(id=junction_id)
-
         data = {
             "Junction": junction.Address,
             "PlateNumber": plate.Number,
             "Speed": speed,
-            "Light": light
+            "Light": light,
+            "destination": destination_id
         }
 
         headers = {
@@ -54,8 +50,10 @@ class Command(BaseCommand):
         }
 
         response = requests.post(url, data=json.dumps(data), headers=headers)
-
         if response.status_code == 200:
-            self.stdout.write(self.style.SUCCESS(response.json()))
+            next_junction = response.json().get('next_junction')
+            return next_junction
+
         else:
-            self.stdout.write(self.style.ERROR(response.json().get('error')))
+            print(f"Failed to get next junction. Response status code: {response.status_code}")
+            return None

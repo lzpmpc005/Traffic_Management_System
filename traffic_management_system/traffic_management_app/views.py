@@ -8,12 +8,17 @@ import random
 from django.core.mail import EmailMessage
 from .models import Vehicle, Junction, Owner, Plates, Log, Fine, DriverLicense, StatReport, Street
 import io
-import os
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from datetime import datetime
+import webbrowser
+from django.db.models import Q
+import heapq
+
 
 sc_number = r'[^\w\s]|\d'
+
+
 @csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
@@ -155,14 +160,55 @@ def logging(request):
             plateNumber = data.get('PlateNumber')
             speed = data.get('Speed')
             light = data.get('Light')
-
-            if 'S' in plateNumber:
-                print('Emergency Vehicle, call notify function here!')
+            destination = data.get('destination')
 
             junction = Junction.objects.get(Address=address)
             plate = Plates.objects.get(Number=plateNumber)
             vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
             log = Log.objects.create(Junction=junction, Vehicle_PlateNumber=plateNumber, Vehicle_Speed=speed)
+
+            # detect emergency vehicle and point the fastest route to the destination
+            if 'S' in plateNumber:
+                if destination:
+                    if destination == junction.id:
+                        return JsonResponse({'next_junction': 0})
+                    shortest_path = calculate_shortest_path(junction.id, destination)
+                    next_junction = shortest_path[1]
+
+                    street1 = Street.objects.filter(
+                        Q(Start_junction_id=junction.id, End_junction_id=next_junction) |
+                        Q(Start_junction_id=next_junction, End_junction_id=junction.id)).first()
+                    if len(shortest_path) > 2:
+                        street2 = Street.objects.filter(
+                            Q(Start_junction_id=shortest_path[1], End_junction_id=shortest_path[2]) |
+                            Q(Start_junction_id=shortest_path[2], End_junction_id=shortest_path[1])).first()
+                    else:
+                        street2 = None
+
+                    # send email to drivers who passed the first 2 junctions within 1 minute to avoid the route
+                    current_time = datetime.now()
+                    date = current_time.date()
+                    start_time = current_time.replace(minute=current_time.minute-1, second=0, microsecond=0).time()
+                    end_time = current_time.strftime('%H:%M:%S')
+
+                    logs = Log.objects.filter(
+                        Date=date, Time__range=(start_time, end_time),
+                        Junction_id__in=[shortest_path[0], shortest_path[1]]
+                    ).exclude(Vehicle_PlateNumber=plateNumber)
+
+                    if logs.exists():
+                        for log in logs:
+                            plate = Plates.objects.get(Number=log.Vehicle_PlateNumber)
+                            vehicle = Vehicle.objects.get(PlateNumber_id=plate.id)
+                            print(destination, vehicle.Owner_id)
+                            street1_name = street1.Name
+                            if street2:
+                                street2_name = street2.Name
+                            else:
+                                street2_name = None
+                            send_avoid_email(address, street1_name, street2_name, destination, vehicle.Owner_id)
+
+                    return JsonResponse({'next_junction': next_junction})
 
             # detecting congestion and suggest alternative routes to drivers
             report = StatReport.objects.filter(Junction_id=log.Junction_id).order_by('-id').first()
@@ -362,6 +408,7 @@ def generate_report(data, chart, columnX, columnY, time_period, junction_id, rep
         fig, ax = plt.subplots()
         ax.bar(x_data, y_data)
         ax.set_xticks(x_data)
+        ax.set_xticklabels(x_data, rotation=45)
 
     ax.set_xlabel(columnX)
     ax.set_ylabel(columnY)
@@ -377,8 +424,6 @@ def generate_report(data, chart, columnX, columnY, time_period, junction_id, rep
     with open(report_path, 'wb') as f:
         f.write(buffer.getvalue())
     plt.close(fig)
-
-    os.startfile(report_path)
 
 
 @csrf_exempt
@@ -417,6 +462,8 @@ def retrieveReport(request):
             columnY = 'Vehicle_Quantity'
             generate_report(data, "line", columnX, columnY, time_period, junction_id, report_path)
 
+        webbrowser.open(report_path)
+
         return JsonResponse({'Traffic Report Period:': time_period,
                              'Traffic Report Location': report_path})
 
@@ -447,5 +494,82 @@ def register_route(request):
 
         except json.JSONDecodeError:
             return JsonResponse({'error': "Invalid JSON format"}, status=400)
-
     return JsonResponse({'error': "Invalid request method"}, status=405)
+
+
+def calculate_shortest_path(start_id, destination_id):
+    # Dijkstra's algorithm to find the shortest path
+    junctions = Junction.objects.all()
+    distances = {junction.id: float('inf') for junction in junctions}
+    distances[start_id] = 0
+    previous = {junction.id: None for junction in junctions}
+    visited = set()
+
+    priority_queue = [(0, start_id)]
+
+    while priority_queue:
+        current_distance, current_id = heapq.heappop(priority_queue)
+        if current_id in visited:
+            continue
+        visited.add(current_id)
+
+        for street in Street.objects.filter(Q(Start_junction_id=current_id) | Q(End_junction_id=current_id)):
+            neighbor_id = street.Start_junction_id if street.End_junction_id == current_id else street.End_junction_id
+            if neighbor_id in visited:
+                continue
+            if is_congested(neighbor_id):
+                continue
+            new_distance = current_distance + street.Distance
+            if new_distance < distances[neighbor_id]:
+                distances[neighbor_id] = new_distance
+                previous[neighbor_id] = current_id
+                heapq.heappush(priority_queue, (new_distance, neighbor_id))
+
+    shortest_path = []
+    current_id = destination_id
+    while current_id is not None:
+        shortest_path.insert(0, current_id)
+        current_id = previous[current_id]
+
+    return shortest_path
+
+
+def is_congested(junction_id):
+    current_time = datetime.now()
+    date = current_time.date()
+    start_time = current_time.replace(minute=(current_time.minute // 10) * 10, second=0, microsecond=0).time()
+    end_time = current_time.strftime('%H:%M:%S')
+
+    latest_report = (StatReport.objects.filter(Date=date, Time__range=(start_time, end_time),
+                                               Junction_id=junction_id)).first()
+    if latest_report is not None and latest_report.Vehicle_Quantity >= 20:
+        return True
+    else:
+        return False
+
+
+def send_avoid_email(junction_name, street1, street2, destination, drivers_id):
+    owner = Owner.objects.get(id=drivers_id)
+    destination_junction = Junction.objects.get(id=destination)
+
+    if street2 is None:
+        message = (f"Dear Mr/Mrs. {owner.Owner_name}:\n\nThere is an emergency vehicle at {junction_name} \n"
+                   f"heading to {destination_junction.Address}. \n"
+                   f"Please avoid {street1} to make way.\n"
+                   f"\nRegard,\nLeipzig Traffic Police")
+    elif street1 == street2:
+        message = (f"Dear Mr/Mrs. {owner.Owner_name}:\n\nThere is an emergency vehicle at {junction_name}\n "
+                   f"heading to {destination_junction.Address}. \n"
+                   f"Please avoid {street1} to make way.\n"
+                   f"\nRegard,\nLeipzig Traffic Police")
+    else:
+        message = (f"Dear Mr/Mrs. {owner.Owner_name}:\n\nThere is an emergency vehicle at {junction_name}\n "
+                   f"heading to {destination_junction.Address}. \n"
+                   f"Please avoid {street1} and {street2} to make way.\n"
+                   f"\nRegard,\nLeipzig Traffic Police")
+
+    subject = 'Emergency Vehicle Notification'
+    from_email = 'leipzig_traffic@outlook.com'
+    recipient_list = [owner.Owner_email]
+    email = EmailMessage(subject, message, from_email, recipient_list)
+    email.send()

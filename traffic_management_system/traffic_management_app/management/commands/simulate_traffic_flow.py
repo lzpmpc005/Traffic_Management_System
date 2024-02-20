@@ -15,7 +15,7 @@ class Command(BaseCommand):
         last_toggle_time = datetime.now().strftime("%M%S")
 
         while True:
-            vehicle_id = random.randint(120, 129)
+            vehicle_id = random.randint(4, 119)
             now = datetime.now().strftime("%M%S")
 
             if (int(now) - int(last_toggle_time)) >= 10:
@@ -27,26 +27,7 @@ class Command(BaseCommand):
     def traffic_flow(self, vehicle_id, light, url):
         now = datetime.now()
         time_interval = now.minute
-
-        weights = [1] * 31
-        if time_interval < 10:
-            weights[0] = 3
-            weights[6] = 3
-        elif time_interval < 20:
-            weights[1] = 3
-            weights[7] = 3
-        elif time_interval < 30:
-            weights[2] = 3
-            weights[8] = 3
-        elif time_interval < 40:
-            weights[3] = 3
-            weights[9] = 3
-        elif time_interval < 50:
-            weights[4] = 3
-            weights[10] = 3
-        else:
-            weights[5] = 3
-            weights[11] = 3
+        weights = self.cal_weights(time_interval)
 
         junction = random.choices(Junction.objects.all(), weights=weights, k=1)[0]
         vehicle = Vehicle.objects.get(id=vehicle_id)
@@ -65,6 +46,14 @@ class Command(BaseCommand):
         response = requests.post(url, data=json.dumps(data), headers=headers)
 
         if response.status_code == 200:
-            self.stdout.write(self.style.SUCCESS(response.json()))
+            self.stdout.write(self.style.SUCCESS(str(response.json())))
         else:
-            self.stdout.write(self.style.ERROR(response.json().get('error')))
+            self.stdout.write(self.style.ERROR(str(response.json().get('error'))))
+
+    def cal_weights(self, time_interval):
+        i = time_interval//10
+        indices = [i, i+6, i+12, i+18, i+24]
+        weights = [1] * 31
+        for i in indices:
+            weights[i] = random.randint(2, 10)
+        return weights
