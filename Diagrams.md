@@ -4,6 +4,7 @@ or import into draw.io
 ## Class Diagram
 @startuml
 
+
 Left to Right Direction
 
 class Owner {
@@ -71,6 +72,13 @@ class AnalysisReport {
   + Time
 }
 
+class Street {
+  + Start_Junction_id
+  + End_Junction_id
+  + Distance
+  + Name
+}
+
 Log - Junction
 Log -- AnalysisReport
 Owner "1" -- "N" Vehicle
@@ -78,7 +86,7 @@ Plates "1" -- "1" Vehicle
 Owner "1" -- "N" Fine
 Owner "1" -- "1" DriverLicense
 Vehicle -- Log
-
+Junction -- Street
 @enduml
 
 ## Register_Vehicle: Usecase Diagram
@@ -308,3 +316,127 @@ ES -> D : Email Notification
 deactivate ES
 
 @enduml
+
+
+#  Detect Emergency Vehicle & Guide
+
+## Usecase Diagram
+
+@startuml
+
+left to right direction
+
+actor "SkyEye" << device >> as S
+
+rectangle "Traffic Management System" {
+    usecase (Detect Emergency Vehicle) as UC1
+    usecase (Check If On Mission) as UC2
+    usecase (Calculate Shortest Path) as UC3
+    usecase (Detect Congestion) as UC4
+    usecase (Guide Emergency Vehicle To The Next Junction) as UC5
+    usecase (Check If Arrived Destination) as UC6
+}
+
+S --> UC1
+UC1 --> UC2: << include >>
+UC1 --> UC3
+UC3 --> UC4: << include >>
+UC3 --> UC5
+UC1 --> UC6: << include >>
+
+@enduml
+
+
+# Detect Emergency Vehicle & Guide
+## Sequence Diagram
+
+@startuml
+
+== Traffic Management System ==
+
+actor "Emergency Vehicle" as E
+actor "SkyEye" as S
+
+participant "Traffic Monitoring System" as TMS
+
+participant "Department of Motor Vehicle" as DMV
+
+E -> S : Pass Junction
+S -> S : Detect Emergency Vehicle
+S -> S : Check if On Mission
+S -> S : Check if Arrived Destination
+S -> TMS : Calculate Shortest Path to Destination
+activate TMS
+TMS -> DMV : Get Traffic Data
+activate DMV
+DMV -> TMS : Return Traffic Data
+deactivate DMV
+
+TMS -> TMS : Detect Congestion
+
+TMS -> E : Suggest Next Junction
+deactivate TMS
+E -> E : Drive to Next Junction
+
+@enduml
+
+
+# Notify Drivers To Clear the Way
+
+## Usecase Diagram
+
+@startuml
+Left to Right Direction
+
+actor SkyEye as S
+actor EmailServer as E
+rectangle "Traffic Management System" {
+   usecase (Detect Emergency Vehicle) as UC1
+   usecase (Retrieve Traffic Data) as UC2
+   usecase (Find Drivers) as UC4
+   usecase (Send Notification Email) as UC5
+}
+
+S --> UC1
+UC1 --> UC2
+UC2 --> UC4
+UC4 --> UC5
+E --> UC5
+@enduml
+
+
+
+# Notify Drivers To Clear the Way
+
+## Sequence Diagram
+
+@startuml
+
+== Traffic Management System ==
+
+actor "SkyEye" as S
+participant "Traffic Monitoring System" as TMS
+participant "Department of Motor Vehicle" as DMV
+participant "Email Server" as ES
+actor "Driver" as D
+
+S -> S : Detect Emergency Vehicle
+S -> TMS: Get Next Junction
+activate TMS
+TMS -> S: Return Next Junction
+deactivate TMS
+S -> DMV : Get Traffic Data
+activate DMV
+DMV -> S : Return Traffic Data
+deactivate DMV
+S -> S : Find Drivers
+
+== Email Notification ==
+
+S -> ES : Send Emergency Information
+activate ES
+ES -> D : Email Notification
+deactivate ES
+
+@enduml
+
